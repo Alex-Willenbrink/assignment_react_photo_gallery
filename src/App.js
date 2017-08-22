@@ -76,28 +76,31 @@ class ImageContainer extends Component {
     super();
 
     this.state = {
-      filter: null
+      filter: null,
+      filteredImages: images
     };
   }
 
-  // filterImages = () => {
-  //   let filteredImages = [];
-  //   this.images.forEach(image => {
-  //     if (image.filter === this.state.filter) {
-  //       filteredImages.push(image);
-  //     }
-  //   });
+  filterImages = () => {
+    let filteredImages = [];
+    images.forEach(image => {
+      if (image.filter === this.state.filter || !this.state.filter) {
+        filteredImages.push(image);
+      }
+    });
 
-  //   let imageRow = [];
-  //   let imageRows = [];
-  //   filteredImages.forEach((image, index) => {
-  //     imageRow.push(image);
-  //     if (index === filteredImages.length - 1 || imageRow.length > 2) {
-  //       imageRows.push(imageRow);
-  //       imageRow = [];
-  //     }
-  //   });
-  // };
+    let imageRow = [];
+    let imageRows = [];
+    filteredImages.forEach((image, index) => {
+      imageRow.push(image);
+      if (index === filteredImages.length - 1 || imageRow.length > 2) {
+        imageRows.push(imageRow);
+        imageRow = [];
+      }
+    });
+
+    return imageRows;
+  };
 
   handleFilter = newFilter => {
     console.log("in handleFilter!");
@@ -117,12 +120,10 @@ class ImageContainer extends Component {
           }}
         />
 
-        {/*<div className="image">
-          {imageRows.map(imageRow => <ImageRow imageRow={imageRow} />)}
-        </div>*/}
-
-        <div>
-          {this.state.filter}
+        <div className="image">
+          {this.filterImages().map(imageRow =>
+            <ImageRow imageRow={imageRow} />
+          )}
         </div>
       </div>
     );
@@ -131,6 +132,7 @@ class ImageContainer extends Component {
 
 const DropDownFilter = ({ onChange }) => {
   let instagramFilters = [
+    "",
     "Normal",
     "Lark",
     "Reyes",
