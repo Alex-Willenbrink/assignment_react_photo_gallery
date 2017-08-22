@@ -4,10 +4,13 @@ import "./App.css";
 let images = require("./photos").data;
 
 images = images.map(image => {
+  const createdTime = new Date(image["created_time"] * 1000).toString();
   return {
     username: image.user.username,
+    userUrl: `https://instagram.com/${image.user.username}`,
     imageUrl: image.images["standard_resolution"]["url"],
-    time: image["created_time"],
+    imageInstagram: image.link,
+    time: createdTime,
     likes: image.likes.count,
     comments: image.comments.count,
     filter: image.filter,
@@ -15,41 +18,49 @@ images = images.map(image => {
   };
 });
 
-let imageRow = [];
-let imageRows = [];
-imageRows = images.forEach((image, index) => {
-    imageRow.push(image)
-    if(index === images.length - 1 || imageRow.length > 2) {
-      imageRows.push(imageRow);
-      imageRow = [];
-    }
-})
+var imageRow = [];
+var imageRows = [];
+images.forEach((image, index) => {
+  imageRow.push(image);
+  if (index === images.length - 1 || imageRow.length > 2) {
+    imageRows.push(imageRow);
+    imageRow = [];
+  }
+});
 
 const ImagePanel = ({ image }) => {
   return (
     <div className="panel panel-default col-xs-4">
       <div className="panel-body">
-        <img src={image.imageUrl} className="img-responsive" />
-        <ul>
-          <li>
-            {image.username}
-          </li>
-          <li>
-            {image.time}
-          </li>
-          <li>
+        <div className="row">
+          <a href={image.imageInstagram}>
+            <img src={image.imageUrl} className="img-responsive" />
+          </a>
+        </div>
+        <div className="row">
+          posted by <a href={image.userUrl}>{image.username}</a> at {image.time}
+        </div>
+        <div className="row">
+          <div className="col-xs-6">
             Likes: {image.likes}
-          </li>
-          <li>
+          </div>
+          <div className="col-xs-6">
             Comments: {image.comments}
-          </li>
-          <li>
-            Filter: {image.filter}
-          </li>
-          <li>
-            Tags: <ul className="list-inline"> { image.tags.map(tag => <li>{tag}</li>) } </ul>
-          </li>
-        </ul>
+          </div>
+        </div>
+        <div className="row">
+          Filter: {image.filter}
+        </div>
+        <div className="row">
+          Tags:{" "}
+          <ul className="list-inline">
+            {" "}{image.tags.map(tag =>
+              <li>
+                {tag}
+              </li>
+            )}{" "}
+          </ul>
+        </div>
       </div>
     </div>
   );
@@ -58,19 +69,18 @@ const ImagePanel = ({ image }) => {
 const ImageRow = ({ imageRow }) => {
   return (
     <div className="row">
-      {imageRow.map(image => <ImagePanel image={image}/>)}
+      {imageRow.map(image => <ImagePanel image={image} />)}
     </div>
-  )
-}
+  );
+};
 
 const ImageContainer = ({ imageRows }) => {
   return (
     <div className="image">
-
-      {imageRows.map(imageRow => <ImageRow imageRow={imageRow}/>)}
-   </div>
-  )
-}
+      {imageRows.map(imageRow => <ImageRow imageRow={imageRow} />)}
+    </div>
+  );
+};
 
 // class imageContainer extends Component {
 //   constructor() {
@@ -89,13 +99,11 @@ const ImageContainer = ({ imageRows }) => {
 //
 //   }
 
-
 // }
-
 
 class App extends Component {
   render() {
-    console.log(images);
+    console.log(imageRows);
     return (
       <div className="App">
         <div className="App-header">
@@ -110,7 +118,6 @@ class App extends Component {
 }
 
 export default App;
-
 
 // proxyConsole.js:56 Warning: Unknown prop `imageRows` on <imageContainer> tag. Remove this prop from the element. For details, see https://fb.me/react-unknown-prop
 //     in imageContainer (at App.js:105)
