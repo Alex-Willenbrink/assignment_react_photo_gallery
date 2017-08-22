@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, {Component} from "react";
 import "./App.css";
 
 let images = require("./photos").data;
@@ -20,16 +20,18 @@ images = images.map(image => {
 
 let filters = [];
 images.forEach(image => {
-  if (!filters.includes(image.filter)) filters.push(image.filter);
-});
+  if (!filters.includes(image.filter))
+    filters.push(image.filter);
+  }
+);
 
-const ImagePanel = ({ image }) => {
+const ImagePanel = ({image}) => {
   return (
-    <div className="panel panel-default col-xs-4">
+    <div className="panel panel-default">
       <div className="panel-body">
         <div className="row">
           <a href={image.imageInstagram}>
-            <img src={image.imageUrl} className="img-responsive" />
+            <img src={image.imageUrl} className="img-responsive"/>
           </a>
         </div>
         <div className="row">
@@ -51,11 +53,9 @@ const ImagePanel = ({ image }) => {
         <div className="row">
           Tags:{" "}
           <ul className="list-inline">
-            {" "}{image.tags.map(tag =>
-              <li>
-                {tag}
-              </li>
-            )}{" "}
+            {" "}{image.tags.map(tag => <li>
+              {tag}
+            </li>)}{" "}
           </ul>
         </div>
       </div>
@@ -63,13 +63,13 @@ const ImagePanel = ({ image }) => {
   );
 };
 
-const ImageRow = ({ imageRow }) => {
-  return (
-    <div className="row">
-      {imageRow.map(image => <ImagePanel image={image} />)}
-    </div>
-  );
-};
+// const ImageRow = ({ imageRow }) => {
+//   return (
+//     <div className="row">
+//       {imageRow.map(image => <ImagePanel image={image} />)}
+//     </div>
+//   );
+// };
 
 class ImageContainer extends Component {
   constructor() {
@@ -88,48 +88,45 @@ class ImageContainer extends Component {
       }
     });
 
-    let imageRow = [];
-    let imageRows = [];
-    filteredImages.forEach((image, index) => {
-      imageRow.push(image);
-      if (index === filteredImages.length - 1 || imageRow.length > 2) {
-        imageRows.push(imageRow);
-        imageRow = [];
-      }
-    });
+    // let imageRow = [];
+    // let imageRows = [];
+    // filteredImages.forEach((image, index) => {
+    //   imageRow.push(image);
+    //   if (index === filteredImages.length - 1 || imageRow.length > 2) {
+    //     imageRows.push(imageRow);
+    //     imageRow = [];
+    //   }
+    // });
 
-    return imageRows;
+    // return imageRows;
+    return filteredImages;
   };
 
   handleFilter = newFilter => {
     console.log("in handleFilter!");
     console.log(newFilter);
-    this.setState({ filter: newFilter });
+    this.setState({filter: newFilter});
     console.log(this.state.filter);
   };
 
   render() {
-    const { filter, imageRows } = this.state;
+    const {filter, imageRows} = this.state;
     return (
       <div>
-        <DropDownFilter
-          onChange={e => {
-            console.log(e);
-            this.handleFilter(e.target.value);
-          }}
-        />
+        <DropDownFilter onChange={e => {
+          console.log(e);
+          this.handleFilter(e.target.value);
+        }}/>
 
-        <div className="image">
-          {this.filterImages().map(imageRow =>
-            <ImageRow imageRow={imageRow} />
-          )}
+        <div className="image image-grid">
+          {this.filterImages().map(image => <ImagePanel image={image}/>)}
         </div>
       </div>
     );
   }
 }
 
-const DropDownFilter = ({ onChange }) => {
+const DropDownFilter = ({onChange}) => {
   let instagramFilters = [
     "",
     "Normal",
@@ -141,11 +138,9 @@ const DropDownFilter = ({ onChange }) => {
   ];
   return (
     <select onChange={onChange}>
-      {instagramFilters.map(filter =>
-        <option value={filter} key={filter}>
-          {filter}
-        </option>
-      )}
+      {instagramFilters.map(filter => <option value={filter} key={filter}>
+        {filter}
+      </option>)}
     </select>
   );
 };
@@ -176,9 +171,7 @@ class App extends Component {
         <div className="App-header">
           <h2>Welcome to Our Photo Gallery!</h2>
         </div>
-        <div className="container">
-          <ImageContainer />
-        </div>
+        <ImageContainer/>
       </div>
     );
   }
