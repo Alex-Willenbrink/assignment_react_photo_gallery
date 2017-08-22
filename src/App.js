@@ -1,4 +1,4 @@
-import React, {Component} from "react";
+import React, { Component } from "react";
 import "./App.css";
 
 let images = require("./photos").data;
@@ -20,18 +20,16 @@ images = images.map(image => {
 
 let filters = [];
 images.forEach(image => {
-  if (!filters.includes(image.filter))
-    filters.push(image.filter);
-  }
-);
+  if (!filters.includes(image.filter)) filters.push(image.filter);
+});
 
-const ImagePanel = ({image}) => {
+const ImagePanel = ({ image }) => {
   return (
     <div className="panel panel-default">
       <div className="panel-body">
         <div className="row">
           <a href={image.imageInstagram}>
-            <img src={image.imageUrl} className="img-responsive"/>
+            <img src={image.imageUrl} className="img-responsive" />
           </a>
         </div>
         <div className="row">
@@ -51,11 +49,13 @@ const ImagePanel = ({image}) => {
           Filter: {image.filter}
         </div>
         <div className="row">
-          Tags:{" "}
+          Tags:
           <ul className="list-inline">
-            {" "}{image.tags.map(tag => <li>
-              {tag}
-            </li>)}{" "}
+            {image.tags.map(tag =>
+              <li key={tag}>
+                {tag}
+              </li>
+            )}
           </ul>
         </div>
       </div>
@@ -72,11 +72,17 @@ const ImagePanel = ({image}) => {
 // };
 
 class ImageContainer extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
+
+    const endPoint =
+      this.props.images.length < 12 ? this.props.images.length : 12;
 
     this.state = {
-      filter: null
+      filter: null,
+      filteredImages: this.props.images,
+      currentImages: this.props.images.slice(0, endPoint),
+      page: 1
     };
   }
 
@@ -88,45 +94,97 @@ class ImageContainer extends Component {
       }
     });
 
-    // let imageRow = [];
-    // let imageRows = [];
-    // filteredImages.forEach((image, index) => {
-    //   imageRow.push(image);
-    //   if (index === filteredImages.length - 1 || imageRow.length > 2) {
-    //     imageRows.push(imageRow);
-    //     imageRow = [];
-    //   }
-    // });
+    this.setState({ filteredImages: filteredImages }, () => {
+      this.currentPage();
+    });
+  };
 
-    // return imageRows;
-    return filteredImages;
+  currentPage = () => {
+    const numImages = this.state.filteredImages.length;
+    const startPoint = (this.state.page - 1) * 12;
+    const endPoint = startPoint + 12 > numImages ? numImages : startPoint + 12;
+    this.setState({
+      currentImages: this.state.filteredImages.slice(startPoint, endPoint)
+    });
   };
 
   handleFilter = newFilter => {
     console.log("in handleFilter!");
     console.log(newFilter);
-    this.setState({filter: newFilter});
-    console.log(this.state.filter);
+    this.setState({ filter: newFilter }, () => {
+      this.filterImages();
+    });
+  };
+
+  handlePageChange = newPage => {
+    this.setState({ page: parseInt(newPage) }, () => {
+      this.currentPage();
+    });
   };
 
   render() {
-    const {filter, imageRows} = this.state;
+    const { filter, imageRows } = this.state;
     return (
       <div>
-        <DropDownFilter onChange={e => {
-          console.log(e);
-          this.handleFilter(e.target.value);
-        }}/>
+        <DropDownFilter
+          onChange={e => {
+            console.log(e);
+            this.handleFilter(e.target.value);
+          }}
+        />
+
+        <p>
+          <strong>Results found:</strong> {this.state.filteredImages.length}
+        </p>
+
+        <PageNav
+          numImages={this.state.filteredImages.length}
+          currentPage={this.state.page}
+          onClick={e => {
+            e.preventDefault();
+            this.handlePageChange(e.target.text);
+          }}
+        />
 
         <div className="image image-grid">
-          {this.filterImages().map(image => <ImagePanel image={image}/>)}
+          {this.state.currentImages.map(image =>
+            <ImagePanel image={image} key={image.imageUrl} />
+          )}
         </div>
       </div>
     );
   }
 }
 
-const DropDownFilter = ({onChange}) => {
+const PageNav = ({ numImages, currentPage, onClick }) => {
+  const pageArray = new Array(Math.ceil(numImages / 12)).fill(0);
+
+  return (
+    <div>
+      {pageArray.map((val, i) =>
+        <span>
+          <span>&nbsp;&nbsp;</span>
+          <a onClick={onClick}>
+            {i + 1}
+          </a>
+          <span>&nbsp;&nbsp;</span>
+        </span>
+      )}
+    </div>
+  );
+};
+
+// {
+//   i === currentPage
+//     ? <span>
+//         {i + 1}
+//       </span>
+//     : <a onClick={onClick}>
+//         {i + 1}
+//       </a>;
+// }
+
+const DropDownFilter = ({ onChange }) => {
   let instagramFilters = [
     "",
     "Normal",
@@ -138,9 +196,11 @@ const DropDownFilter = ({onChange}) => {
   ];
   return (
     <select onChange={onChange}>
-      {instagramFilters.map(filter => <option value={filter} key={filter}>
-        {filter}
-      </option>)}
+      {instagramFilters.map(filter =>
+        <option value={filter} key={filter}>
+          {filter}
+        </option>
+      )}
     </select>
   );
 };
@@ -171,7 +231,7 @@ class App extends Component {
         <div className="App-header">
           <h2>Welcome to Our Photo Gallery!</h2>
         </div>
-        <ImageContainer/>
+        <ImageContainer images={images} />
       </div>
     );
   }
