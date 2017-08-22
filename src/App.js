@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, {Component} from "react";
 import "./App.css";
 
 let images = require("./photos").data;
@@ -18,27 +18,27 @@ images = images.map(image => {
   };
 });
 
-var imageRow = [];
-var imageRows = [];
-images.forEach((image, index) => {
-  imageRow.push(image);
-  if (index === images.length - 1 || imageRow.length > 2) {
-    imageRows.push(imageRow);
-    imageRow = [];
-  }
-});
+let filters = [];
+images.forEach(image => {
+  if(!filters.includes(image.filter)) filters.push(image.filter);
+})
+console.log(filters);
 
-const ImagePanel = ({ image }) => {
+
+
+const ImagePanel = ({image}) => {
   return (
     <div className="panel panel-default col-xs-4">
       <div className="panel-body">
         <div className="row">
           <a href={image.imageInstagram}>
-            <img src={image.imageUrl} className="img-responsive" />
+            <img src={image.imageUrl} className="img-responsive"/>
           </a>
         </div>
         <div className="row">
-          posted by <a href={image.userUrl}>{image.username}</a> at {image.time}
+          posted by
+          <a href={image.userUrl}>{image.username}</a>
+          at {image.time}
         </div>
         <div className="row">
           <div className="col-xs-6">
@@ -54,11 +54,9 @@ const ImagePanel = ({ image }) => {
         <div className="row">
           Tags:{" "}
           <ul className="list-inline">
-            {" "}{image.tags.map(tag =>
-              <li>
-                {tag}
-              </li>
-            )}{" "}
+            {" "}{image.tags.map(tag => <li>
+              {tag}
+            </li>)}{" "}
           </ul>
         </div>
       </div>
@@ -66,21 +64,62 @@ const ImagePanel = ({ image }) => {
   );
 };
 
-const ImageRow = ({ imageRow }) => {
+const ImageRow = ({imageRow}) => {
   return (
     <div className="row">
-      {imageRow.map(image => <ImagePanel image={image} />)}
+      {imageRow.map(image => <ImagePanel image={image}/>)}
     </div>
   );
 };
 
-const ImageContainer = ({ imageRows }) => {
+// class ImageContainer extends Component {
+//   constructor() {
+//     super();
+//
+//     this.state = {
+//       filter: null,
+//       images: this.props.imageRows
+//     }
+//
+//   }
+//
+//   filterImages = () => {
+//     let filteredImages = [];
+//     this.images.forEach((image) => {
+//       if(image.filter === this.state.filter) {
+//         filteredImages.push(image);
+//       }
+//     })
+//
+//     let imageRow = [];
+//     let imageRows = [];
+//     filteredImages.forEach((image, index) => {
+//       imageRow.push(image);
+//       if (index === filteredImages.length - 1 || imageRow.length > 2) {
+//         imageRows.push(imageRow);
+//         imageRow = [];
+//       }
+//     });
+//   }
+//
+//
+//   render() {
+//     const {filter, imageRows} = this.state;
+//     return (
+//       <div className="image">
+//         {imageRows.map(imageRow => <ImageRow imageRow={imageRow}/>)}
+//       </div>
+//     );
+//   }
+// };
+
+
+const DropDownFilter = () => {
+  let instagramFilters = [ 'Normal', 'Lark', 'Reyes', 'Valencia', 'Inkwell', 'Ludwig' ];
   return (
-    <div className="image">
-      {imageRows.map(imageRow => <ImageRow imageRow={imageRow} />)}
-    </div>
-  );
-};
+    <select>{instagramFilters.map(filter => <option value={filter}>{filter}</option>)}</select>
+  )
+}
 
 // class imageContainer extends Component {
 //   constructor() {
@@ -103,14 +142,14 @@ const ImageContainer = ({ imageRows }) => {
 
 class App extends Component {
   render() {
-    console.log(imageRows);
     return (
       <div className="App">
         <div className="App-header">
           <h2>Welcome to Our Photo Gallery!</h2>
         </div>
         <div className="container">
-          <ImageContainer imageRows={imageRows} />
+          <DropDownFilter />
+          {/* <ImageContainer imageRows={imageRows}/> */}
         </div>
       </div>
     );
