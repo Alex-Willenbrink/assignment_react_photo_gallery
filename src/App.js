@@ -1,85 +1,22 @@
-import React, { Component } from "react";
+import React, {Component} from "react";
 import "./App.css";
+import ImagePanel from "./ImagePanel";
+import PageNav from "./PageNav";
+import DropDownFilter from "./DropDownFilter";
+const { images, instagramFilters, sortFilters } = require('./data');
 
-let images = require("./photos").data;
-
-images = images.map(image => {
-  const createdTime = new Date(image["created_time"] * 1000).toString();
-  return {
-    username: image.user.username,
-    userUrl: `https://instagram.com/${image.user.username}`,
-    imageUrl: image.images["standard_resolution"]["url"],
-    imageInstagram: image.link,
-    time: createdTime,
-    likes: image.likes.count,
-    comments: image.comments.count,
-    filter: image.filter,
-    tags: image.tags
-  };
-});
-
-let filters = [];
-images.forEach(image => {
-  if (!filters.includes(image.filter)) filters.push(image.filter);
-});
-
-const ImagePanel = ({ image }) => {
-  return (
-    <div className="panel panel-default">
-      <div className="panel-body">
-        <div className="row">
-          <a href={image.imageInstagram}>
-            <img src={image.imageUrl} className="img-responsive" />
-          </a>
-        </div>
-        <div className="row">
-          posted by
-          <a href={image.userUrl}>{image.username}</a>
-          at {image.time}
-        </div>
-        <div className="row">
-          <div className="col-xs-6">
-            Likes: {image.likes}
-          </div>
-          <div className="col-xs-6">
-            Comments: {image.comments}
-          </div>
-        </div>
-        <div className="row">
-          Filter: {image.filter}
-        </div>
-        <div className="row">
-          Tags:
-          <ul className="list-inline">
-            {image.tags.map(tag =>
-              <li key={tag}>
-                {tag}
-              </li>
-            )}
-          </ul>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// const ImageRow = ({ imageRow }) => {
-//   return (
-//     <div className="row">
-//       {imageRow.map(image => <ImagePanel image={image} />)}
-//     </div>
-//   );
-// };
 
 class ImageContainer extends Component {
   constructor(props) {
     super(props);
 
-    const endPoint =
-      this.props.images.length < 12 ? this.props.images.length : 12;
+    const endPoint = this.props.images.length < 12
+      ? this.props.images.length
+      : 12;
 
     this.state = {
       filter: null,
+      sortType: null,
       filteredImages: this.props.images,
       currentImages: this.props.images.slice(0, endPoint),
       page: 1
@@ -94,135 +31,112 @@ class ImageContainer extends Component {
       }
     });
 
-    this.setState({ filteredImages: filteredImages }, () => {
-      this.currentPage();
+    this.setState({
+      filteredImages: filteredImages
+    }, () => {
+      this.sortImages();
     });
   };
 
   currentPage = () => {
     const numImages = this.state.filteredImages.length;
     const startPoint = (this.state.page - 1) * 12;
-    const endPoint = startPoint + 12 > numImages ? numImages : startPoint + 12;
+    const endPoint = startPoint + 12 > numImages
+      ? numImages
+      : startPoint + 12;
     this.setState({
       currentImages: this.state.filteredImages.slice(startPoint, endPoint)
     });
   };
 
+  sortImages = () => {
+    if (!this.state.sortType) {
+      this.currentPage();
+      return;
+    }
+
+    const [sortType,
+      direction] = this.state.sortType.split("-");
+
+    const sortA = (a, b) => a[sortType] > b[sortType]
+      ? 1
+      : -1
+
+    const sortD = (a, b) => a[sortType] > b[sortType]
+      ? -1
+      : 1
+
+    const sortedImages = direction === 'A'
+      ? this.state.filteredImages.sort(sortA)
+      : this.state.filteredImages.sort(sortD)
+
+    this.setState({
+      filteredImages: sortedImages,
+      page: 1
+    }, () => {
+      this.currentPage()
+    })
+  }
+
   handleFilter = newFilter => {
     console.log("in handleFilter!");
     console.log(newFilter);
-    this.setState({ filter: newFilter }, () => {
+    this.setState({
+      filter: newFilter,
+      page: 1
+    }, () => {
       this.filterImages();
     });
   };
 
+  
+
+  handleSort = newSort => {
+    this.setState({
+      sortType: newSort
+    }, () => this.sortImages())
+  }
+
   handlePageChange = newPage => {
-    this.setState({ page: parseInt(newPage) }, () => {
+    this.setState({
+      page: parseInt(newPage)
+    }, () => {
       this.currentPage();
     });
   };
 
   render() {
-    const { filter, imageRows } = this.state;
+    const {filter, imageRows} = this.state;
     return (
       <div>
-        <DropDownFilter
-          onChange={e => {
-            console.log(e);
-            this.handleFilter(e.target.value);
-          }}
-        />
+        <DropDownFilter onChange={e => {
+          console.log(e);
+          this.handleFilter(e.target.value);
+        }} filterArray={instagramFilters}/>
+
+        <DropDownFilter onChange={e => {
+          console.log(e);
+          this.handleSort(e.target.value);
+        }} filterArray={sortFilters}/>
 
         <p>
-          <strong>Results found:</strong> {this.state.filteredImages.length}
+          <strong>Results found:</strong>
+          {this.state.filteredImages.length}
         </p>
 
-        <PageNav
-          numImages={this.state.filteredImages.length}
-          currentPage={this.state.page}
-          onClick={e => {
-            e.preventDefault();
-            this.handlePageChange(e.target.text);
-          }}
-        />
+        <PageNav numImages={this.state.filteredImages.length} currentPage={this.state.page} onClick={e => {
+          e.preventDefault();
+          this.handlePageChange(e.target.text);
+        }}/>
 
         <div className="image image-grid">
-          {this.state.currentImages.map(image =>
-            <ImagePanel image={image} key={image.imageUrl} />
-          )}
+          {this.state.currentImages.map(image => <ImagePanel image={image} key={image.imageUrl}/>)}
         </div>
       </div>
     );
   }
 }
 
-const PageNav = ({ numImages, currentPage, onClick }) => {
-  const pageArray = new Array(Math.ceil(numImages / 12)).fill(0);
-
-  return (
-    <div>
-      {pageArray.map((val, i) =>
-        <span>
-          <span>&nbsp;&nbsp;</span>
-          <a onClick={onClick}>
-            {i + 1}
-          </a>
-          <span>&nbsp;&nbsp;</span>
-        </span>
-      )}
-    </div>
-  );
-};
-
-// {
-//   i === currentPage
-//     ? <span>
-//         {i + 1}
-//       </span>
-//     : <a onClick={onClick}>
-//         {i + 1}
-//       </a>;
-// }
-
-const DropDownFilter = ({ onChange }) => {
-  let instagramFilters = [
-    "",
-    "Normal",
-    "Lark",
-    "Reyes",
-    "Valencia",
-    "Inkwell",
-    "Ludwig"
-  ];
-  return (
-    <select onChange={onChange}>
-      {instagramFilters.map(filter =>
-        <option value={filter} key={filter}>
-          {filter}
-        </option>
-      )}
-    </select>
-  );
-};
-
-// class imageContainer extends Component {
-//   constructor() {
-//     super()
-//
-//     this.state = {
-//       imageRow: image.slice(index, index + ((this.images.length - this.state.index) > 3) ? 3 : this.images.length)),
-//       index: 0,
-//       images: images
-//     }
-//   }
-//
-//
-//
-//   render() {
-//
-//   }
-
-// }
 
 class App extends Component {
   render() {
@@ -231,7 +145,7 @@ class App extends Component {
         <div className="App-header">
           <h2>Welcome to Our Photo Gallery!</h2>
         </div>
-        <ImageContainer images={images} />
+        <ImageContainer images={images}/>
       </div>
     );
   }
