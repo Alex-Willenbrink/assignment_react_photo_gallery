@@ -76,8 +76,7 @@ class ImageContainer extends Component {
     super();
 
     this.state = {
-      filter: null,
-      filteredImages: images
+      filter: null
     };
   }
 
